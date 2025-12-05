@@ -1,103 +1,109 @@
 (function () {
     'use strict';
 
-    // 检查依赖
     if (typeof http === 'undefined') {
         console.error('请先加载 request.js');
         return;
     }
 
-    // ==================== 普通题目接口 ====================
+    // 题目类型和难度映射
+    const typeNames = {
+        1: '干员调配与特性化决策',
+        2: '空间部署与极致化战术',
+        3: '效能审计与生态位界定',
+        4: '横向分析与竞争力评估',
+        5: '作战环境与档案类记录'
+    };
+
+    const difficultyNames = {
+        1: '常识', 2: '基操', 3: '娴熟', 4: '明智', 5: '深邃'
+    };
+
+    // 题目管理 API
     window.questionApi = {
+        // 获取题目列表：支持分页、筛选和搜索
         getQuestions: function (params = {}) {
             const defaultParams = {
                 page: 1,
-                size: 20,
+                size: 50,
                 keyword: '',
                 type: undefined,
-                difficulty: undefined,
-                includeAnalysis: false
+                difficulty: undefined
             };
             return http.get('/questions', { ...defaultParams, ...params }, {
                 showLoading: false
             });
         },
 
+        // 获取题目详情：包括题目内容和统计信息
         getQuestionById: function (id, includeAnalysis = true) {
-            return http.get('/questions/' + id, { includeAnalysis });
+            return http.get(`/questions/${id}`, { includeAnalysis });
         },
 
+        // 获取题目统计：正确率、常见错误选项等
         getQuestionStats: function (id) {
-            return http.get('/questions/' + id + '/stats');
+            return http.get(`/stats/question/${id}`);
         },
 
+        // 搜索题目：通过关键词匹配题目内容
+        searchQuestions: function (keyword, field = 'question') {
+            return http.get('/questions/search', { keyword, field });
+        },
+
+        // 创建题目：管理员添加新题目
         createQuestion: function (question) {
             return http.post('/questions', question);
         },
 
+        // 更新题目：管理员修改题目内容
         updateQuestion: function (id, question) {
-            return http.put('/questions/' + id, question);
+            return http.put(`/questions/${id}`, question);
         },
 
+        // 删除题目：管理员删除题目
         deleteQuestion: function (id) {
-            return http.delete('/questions/' + id);
+            return http.delete(`/questions/${id}`);
         }
     };
 
-    // ==================== 培训题目接口 ====================
+    // 培训题目管理 API
     window.trainingQuestionApi = {
+        // 获取培训题目列表：入职培训专用题目
         getTrainingQuestions: function (params = {}) {
-            const defaultParams = {
-                page: 1,
-                size: 20,
-                keyword: '',
-                includeAnalysis: false
-            };
-            return http.get('/training/questions', { ...defaultParams, ...params });
+            return http.get('/training/questions', {
+                page: params.page || 1,
+                size: params.size || 20
+            });
         },
 
-        getTrainingQuestionById: function (id, includeAnalysis = true) {
-            return http.get('/training/questions/' + id, { includeAnalysis });
+        // 获取培训题目详情
+        getTrainingQuestionById: function (id) {
+            return http.get(`/training/questions/${id}`);
         },
 
+        // 创建培训题目：管理员操作
         createTrainingQuestion: function (question) {
             return http.post('/training/questions', question);
         },
 
+        // 更新培训题目：管理员操作
         updateTrainingQuestion: function (id, question) {
-            return http.put('/training/questions/' + id, question);
+            return http.put(`/training/questions/${id}`, question);
         },
 
+        // 删除培训题目：管理员操作
         deleteTrainingQuestion: function (id) {
-            return http.delete('/training/questions/' + id);
+            return http.delete(`/training/questions/${id}`);
         }
     };
 
-    // ==================== 辅助函数 ====================
+    // 题目数据辅助函数
     window.questionHelper = {
+        // 格式化题目显示：转换换行符和添加类型/难度文本
         formatQuestionForDisplay: function (question) {
             if (!question) return null;
 
-            const typeNames = {
-                1: '干员调配与特性化决策',
-                2: '空间部署与极致化战术',
-                3: '效能审计与生态位界定',
-                4: '横向分析与竞争力评估',
-                5: '作战环境与档案类记录'
-            };
-
-            const difficultyNames = {
-                1: '常识',
-                2: '基操',
-                3: '娴熟',
-                4: '明智',
-                5: '深邃'
-            };
-
-            // 转换换行符为 HTML 换行标签
-            const fmtText = (str) => {
-                return (str || '').replace(/\n/g, '<br>').replace(/\r\n/g, '<br>');
-            };
+            const fmtText = (str) => (str || '').replace(/\n/g, '<br>').replace(/\r\n/g, '<br>');
 
             return {
                 ...question,
@@ -111,20 +117,28 @@
             };
         },
 
+        // 格式化题目提交：HTML转义和字段处理
         formatQuestionForSubmit: function (question) {
-            // 转换 HTML 换行标签为普通换行符
-            const fmtText = (str) => {
-                return (str || '').replace(/<br>/g, '\n').replace(/<br\s*\/?>/g, '\n');
-            };
+            const fmtText = (str) => (str || '').replace(/<br>/g, '\n').replace(/<br\s*\/?>/g, '\n');
 
-            return {
+            const result = {
                 ...question,
                 question: fmtText(question.question),
                 options: (question.options || []).map(opt => fmtText(opt)),
                 analysis: fmtText(question.analysis)
             };
+
+            // 确保关键词是数组格式
+            if (question.keywordsInput) {
+                result.keywords = question.keywordsInput.split(/[,，]/)
+                    .map(k => k.trim())
+                    .filter(k => k.length > 0);
+            }
+
+            return result;
         },
 
+        // 题目验证：检查必填字段和格式
         validateQuestion: function (question) {
             const errors = [];
 

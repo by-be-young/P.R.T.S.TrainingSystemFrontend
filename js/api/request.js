@@ -3,17 +3,17 @@
 
     // 创建 axios 实例
     const service = axios.create({
-        baseURL: window.API_BASE_URL || '/api',
+        baseURL: window.API_BASE_URL || '/api/v1',  // 更新为 API 规范中的 v1 版本
         timeout: 15000,
         headers: {
             'Content-Type': 'application/json;charset=UTF-8'
         }
     });
 
-    // 请求计数器，用于控制 loading
+    // 请求计数器
     let requestCount = 0;
 
-    // 显示 loading（简化版）
+    // 显示加载动画
     const showLoading = () => {
         if (requestCount === 0) {
             const loadingDiv = document.createElement('div');
@@ -32,14 +32,12 @@
         requestCount++;
     };
 
-    // 隐藏 loading
+    // 隐藏加载动画
     const hideLoading = () => {
         requestCount--;
         if (requestCount <= 0) {
             const loadingDiv = document.getElementById('global-loading');
-            if (loadingDiv) {
-                loadingDiv.remove();
-            }
+            if (loadingDiv) loadingDiv.remove();
             requestCount = 0;
         }
     };
@@ -64,78 +62,61 @@
         return localStorage.getItem('token') || sessionStorage.getItem('token');
     };
 
-    // 移除 token
-    const removeToken = () => {
+    // 清除认证信息
+    const clearAuth = () => {
         localStorage.removeItem('token');
         sessionStorage.removeItem('token');
-    };
-
-    // 移除用户信息
-    const removeUserInfo = () => {
         localStorage.removeItem('userInfo');
         sessionStorage.removeItem('userInfo');
     };
 
-    // 请求拦截器
+    // 请求拦截器：添加认证令牌和全局 loading
     service.interceptors.request.use(
         config => {
-            // 是否显示 loading（默认 POST/PUT/DELETE 显示）
+            // 配置是否显示 loading
             const showLoadingDefault = ['post', 'put', 'delete'].includes(config.method?.toLowerCase());
             config.showLoading = config.showLoading ?? showLoadingDefault;
 
-            if (config.showLoading) {
-                showLoading();
-            }
+            if (config.showLoading) showLoading();
 
-            // 添加 token
+            // 添加认证头
             const token = getToken();
-            if (token) {
-                config.headers['Authorization'] = 'Bearer ' + token;
-            }
+            if (token) config.headers['Authorization'] = 'Bearer ' + token;
 
-            // GET 请求添加时间戳防止缓存
+            // GET 请求防缓存
             if (config.method?.toLowerCase() === 'get') {
-                config.params = {
-                    ...config.params,
-                    _t: Date.now()
-                };
+                config.params = { ...config.params, _t: Date.now() };
             }
 
             return config;
         },
         error => {
-            if (error.config?.showLoading) {
-                hideLoading();
-            }
+            if (error.config?.showLoading) hideLoading();
             return Promise.reject(error);
         }
     );
 
-    // 响应拦截器
+    // 响应拦截器：统一处理响应数据和错误
     service.interceptors.response.use(
         response => {
-            if (response.config?.showLoading) {
-                hideLoading();
-            }
+            if (response.config?.showLoading) hideLoading();
 
             const res = response.data;
 
             // 处理标准响应格式
             if (res.code !== undefined) {
-                if (res.code === 200 || res.code === 0) {
+                if (res.code === 200) {
                     return res.data || res;
                 }
 
                 // 错误处理
-                let errorMessage = res.message || res.msg || '操作失败';
+                const errorMessage = res.message || res.msg || '操作失败';
                 showMessage(errorMessage, 'error');
 
-                // 特殊错误处理
+                // 401 未授权处理
                 if (res.code === 401) {
-                    removeToken();
-                    removeUserInfo();
+                    clearAuth();
                     if (!window.location.href.includes('login')) {
-                        // 这里根据你的实际登录页面调整
                         window.location.href = 'index.html#login';
                     }
                 }
@@ -146,38 +127,24 @@
             return res;
         },
         error => {
-            if (error.config?.showLoading) {
-                hideLoading();
-            }
+            if (error.config?.showLoading) hideLoading();
 
             let errorMessage = '';
             if (error.response) {
                 switch (error.response.status) {
-                    case 400:
-                        errorMessage = error.response.data?.message || '请求参数错误';
-                        break;
+                    case 400: errorMessage = error.response.data?.message || '请求参数错误'; break;
                     case 401:
                         errorMessage = '登录已过期，请重新登录';
-                        removeToken();
-                        removeUserInfo();
+                        clearAuth();
                         if (!window.location.href.includes('login')) {
                             window.location.href = 'index.html#login';
                         }
                         break;
-                    case 403:
-                        errorMessage = '没有权限执行此操作';
-                        break;
-                    case 404:
-                        errorMessage = '请求的资源不存在';
-                        break;
-                    case 422:
-                        errorMessage = error.response.data?.message || '数据验证失败';
-                        break;
-                    case 500:
-                        errorMessage = '服务器内部错误';
-                        break;
-                    default:
-                        errorMessage = `请求失败 (${error.response.status})`;
+                    case 403: errorMessage = '没有权限执行此操作'; break;
+                    case 404: errorMessage = '请求的资源不存在'; break;
+                    case 422: errorMessage = error.response.data?.message || '数据验证失败'; break;
+                    case 500: errorMessage = '服务器内部错误'; break;
+                    default: errorMessage = `请求失败 (${error.response.status})`;
                 }
             } else if (error.request) {
                 errorMessage = '网络连接异常，请检查网络设置';
@@ -185,47 +152,35 @@
                 errorMessage = error.message || '请求配置错误';
             }
 
-            if (errorMessage) {
-                showMessage(errorMessage, 'error');
-            }
-
+            if (errorMessage) showMessage(errorMessage, 'error');
             console.error('API请求失败:', errorMessage, error);
             return Promise.reject(error);
         }
     );
 
-    // 封装通用请求方法
-    const http = {
+    // HTTP 方法封装
+    window.http = {
+        // GET 请求：获取资源
         get(url, params = {}, config = {}) {
-            return service.get(url, {
-                params,
-                showLoading: config.showLoading || false,
-                ...config
-            });
+            return service.get(url, { params, showLoading: config.showLoading || false, ...config });
         },
 
+        // POST 请求：创建资源
         post(url, data = {}, config = {}) {
-            return service.post(url, data, {
-                showLoading: config.showLoading ?? true,
-                ...config
-            });
+            return service.post(url, data, { showLoading: config.showLoading ?? true, ...config });
         },
 
+        // PUT 请求：更新资源
         put(url, data = {}, config = {}) {
-            return service.put(url, data, {
-                showLoading: config.showLoading ?? true,
-                ...config
-            });
+            return service.put(url, data, { showLoading: config.showLoading ?? true, ...config });
         },
 
+        // DELETE 请求：删除资源
         delete(url, params = {}, config = {}) {
-            return service.delete(url, {
-                params,
-                showLoading: config.showLoading ?? true,
-                ...config
-            });
+            return service.delete(url, { params, showLoading: config.showLoading ?? true, ...config });
         },
 
+        // 文件上传
         upload(url, file, config = {}) {
             const formData = new FormData();
             formData.append('file', file);
@@ -237,8 +192,7 @@
         }
     };
 
-    // 暴露到全局
+    // 全局访问
     window.ApiRequest = service;
-    window.http = http;
 
 })();
