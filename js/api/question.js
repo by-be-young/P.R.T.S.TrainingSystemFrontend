@@ -21,77 +21,79 @@
 
     // 题目管理 API
     window.questionApi = {
-        // 获取题目列表：支持分页、筛选和搜索
+        // 【题目管理模块-5】获取所有题目
         getQuestions: function (params = {}) {
             const defaultParams = {
                 page: 1,
                 size: 50,
-                keyword: '',
                 type: undefined,
-                difficulty: undefined
+                difficulty: undefined,
+                keyword: ''
             };
             return http.get('/questions', { ...defaultParams, ...params }, {
                 showLoading: false
             });
         },
 
-        // 获取题目详情：包括题目内容和统计信息
+        // 【题目管理模块-6】获取单题详情
         getQuestionById: function (id, includeAnalysis = true) {
             return http.get(`/questions/${id}`, { includeAnalysis });
         },
 
-        // 获取题目统计：正确率、常见错误选项等
+        // 获取题目统计数据
         getQuestionStats: function (id) {
             return http.get(`/stats/question/${id}`);
         },
 
-        // 搜索题目：通过关键词匹配题目内容
-        searchQuestions: function (keyword, field = 'question') {
-            return http.get('/questions/search', { keyword, field });
-        },
-
-        // 创建题目：管理员添加新题目
+        // 【题目管理模块-7】创建题目（管理员操作）
         createQuestion: function (question) {
             return http.post('/questions', question);
         },
 
-        // 更新题目：管理员修改题目内容
+        // 【题目管理模块-8】更新题目信息（管理员操作）
         updateQuestion: function (id, question) {
             return http.put(`/questions/${id}`, question);
         },
 
-        // 删除题目：管理员删除题目
+        // 【题目管理模块-9】删除题目（管理员操作）
         deleteQuestion: function (id) {
             return http.delete(`/questions/${id}`);
+        },
+
+        // 【题目管理模块-10】搜索题目
+        searchQuestions: function (keyword, field = 'question') {
+            return http.get('/questions/search', { keyword, field });
         }
     };
 
     // 培训题目管理 API
     window.trainingQuestionApi = {
-        // 获取培训题目列表：入职培训专用题目
+        // 【培训题目模块-1】获取培训题目列表
         getTrainingQuestions: function (params = {}) {
             return http.get('/training/questions', {
+                // page代表培训模块的页码
                 page: params.page || 1,
+                // size代表每页题目数量
                 size: params.size || 20
             });
         },
 
-        // 获取培训题目详情
+        // 【培训题目模块-2】获取指定培训题目详情
         getTrainingQuestionById: function (id) {
             return http.get(`/training/questions/${id}`);
         },
 
-        // 创建培训题目：管理员操作
+        // 【培训题目模块-3.1】创建培训题目（管理员操作）
         createTrainingQuestion: function (question) {
             return http.post('/training/questions', question);
         },
 
-        // 更新培训题目：管理员操作
+        // 【培训题目模块-3.2】更新培训题目（管理员操作）
         updateTrainingQuestion: function (id, question) {
             return http.put(`/training/questions/${id}`, question);
         },
 
-        // 删除培训题目：管理员操作
+        // 【培训题目模块-3.3】删除培训题目（管理员操作）
         deleteTrainingQuestion: function (id) {
             return http.delete(`/training/questions/${id}`);
         }

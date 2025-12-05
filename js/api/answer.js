@@ -8,18 +8,18 @@
 
     // 答题记录 API
     window.answerApi = {
-        // 提交答案：记录用户答题结果
+        // 【答题记录模块-14】提交答案
         submitAnswer: function (questionId, questionType, selectedOption, timeSpent = 0) {
             return http.post('/answers', {
                 questionId,
                 questionType,
                 selectedOption,
-                timeSpent,
+                //timeSpent, //有余力可以加上答题时间统计
                 examId
             });
         },
 
-        // 获取答题记录：用户历史答题详情
+        // 【答题记录模块-15】获取答题历史
         getAnswerRecords: function (params = {}) {
             return http.get('/answers/history', {
                 page: params.page || 1,
@@ -30,9 +30,18 @@
             });
         },
 
-        // 获取用户答题统计：正确率、答题数量等
-        getUserAnswerStats: function () {
-            return http.get('/stats/user');
+        // 【答题记录模块-16】获取错题本
+        getWrongQuestions: function (params = {}) {
+            return http.get('/answers/wrong', {
+                page: params.page || 1,
+                size: params.size || 10,
+                questionType: params.questionType
+            });
+        },
+
+        // 【答题记录模块-17】从错题本移除题目
+        removeWrongQuestion: function (questionId) {
+            return http.delete(`/answers/wrong/${questionId}`);
         }
     };
 

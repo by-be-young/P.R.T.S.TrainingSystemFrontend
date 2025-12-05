@@ -26,7 +26,7 @@
 
     // 用户认证和资料管理 API
     window.userApi = {
-        // 用户注册：创建新用户账户
+        // 【认证模块-1】用户注册
         register: function (username, password, email) {
             if (!username || username.length < 3) {
                 return Promise.resolve({ success: false, message: '用户名至少需要3个字符' });
@@ -48,7 +48,7 @@
                 }));
         },
 
-        // 用户登录：验证凭据并获取访问令牌
+        // 【认证模块-2】用户登录
         login: function (username, password, rememberMe = false) {
             return http.post('/auth/login', { username, password })
                 .then(res => {
@@ -71,7 +71,7 @@
                 }));
         },
 
-        // 获取当前用户信息：验证令牌并返回用户资料
+        // 【认证模块-3】获取当前登录用户信息
         getCurrentUser: function () {
             return http.get('/auth/profile')
                 .then(res => {
@@ -86,7 +86,7 @@
                 });
         },
 
-        // 退出登录：终止当前会话
+        // 【认证模块-4】用户退出登录
         logout: function () {
             return http.post('/auth/logout')
                 .then(() => {
@@ -109,25 +109,6 @@
             return this.getCurrentUser()
                 .then(userInfo => !!userInfo)
                 .catch(() => false);
-        },
-
-        // 获取用户统计：学习进度和成绩分析
-        getUserStats: function () {
-            return http.get('/stats/user');
-        },
-
-        // 获取错题本：用户答错的题目列表
-        getWrongQuestions: function (params = {}) {
-            return http.get('/answers/wrong', {
-                page: params.page || 1,
-                size: params.size || 10,
-                questionType: params.questionType
-            });
-        },
-
-        // 移除错题：从错题本中删除题目
-        removeWrongQuestion: function (questionId) {
-            return http.delete(`/answers/wrong/${questionId}`);
         }
     };
 

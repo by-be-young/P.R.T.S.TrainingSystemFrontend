@@ -7,7 +7,7 @@
     }
 
     window.adminApi = {
-        // 用户管理
+        // 【系统管理模块（管理员）-26】获取所有用户
         getUsers: function (params = {}) {
             return http.get('/admin/users', {
                 page: params.page || 1,
@@ -17,22 +17,19 @@
             });
         },
 
+        // 【系统管理模块（管理员）-27】修改用户信息
         updateUser: function (userId, userData) {
             return http.put(`/admin/users/${userId}`, userData);
         },
 
-        // 系统配置
+        // 【系统管理模块（管理员）-28.1】获取系统配置
         getConfig: function () {
             return http.get('/admin/config');
         },
 
+        // 【系统管理模块（管理员）-28.2】更新系统配置
         updateConfig: function (config) {
             return http.put('/admin/config', config);
-        },
-
-        // 系统统计
-        getSystemStats: function () {
-            return http.get('/stats/system');
         },
 
         // 批量操作

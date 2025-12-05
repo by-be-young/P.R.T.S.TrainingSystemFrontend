@@ -53,6 +53,10 @@
   }
 }
 ```
+要求：\
+1.用户名至少要3个字符\
+2.密码至少要6个字符\
+3.用户名不能重复。
 
 ### 2. 用户登录
 - **接口**: `POST /auth/login`
@@ -283,9 +287,14 @@
 ## 🎓 培训题目模块
 
 ### 11. 获取培训题目列表
-- **接口**: `GET /training/questions`
-- **描述**: 获取所有培训题目
+- **接口**: GET /training/questions
+- **描述**: 获取培训题目，支持分页
+- **查询参数**:
+    - page: 页码（可选，默认1）
+    - size: 每页数量（可选，默认20）
+
 - **响应**:
+
 ```json
 {
   "code": 200,
@@ -304,7 +313,10 @@
         "createdAt": "2024-01-01T00:00:00Z"
       }
     ],
-    "total": 12
+    "total": 56,        // 总题目数（动态计算）
+    "page": 1,          // 当前页码
+    "size": 20,         // 每页数量
+    "pages": 3          // 总页数
   }
 }
 ```
@@ -333,7 +345,7 @@
   "questionId": 1,
   "questionType": "normal",  // normal/training/exam
   "selectedOption": 3,
-  "timeSpent": 45,          // 单位：秒
+  //"timeSpent": 45,          // 单位：秒  有余力再实现
   "examId": null           // 如果是考试中的题目
 }
 ```

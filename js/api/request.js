@@ -3,7 +3,7 @@
 
     // 创建 axios 实例
     const service = axios.create({
-        baseURL: window.API_BASE_URL || '/api/v1',  // 更新为 API 规范中的 v1 版本
+        baseURL: window.API_BASE_URL || '/api',
         timeout: 15000,
         headers: {
             'Content-Type': 'application/json;charset=UTF-8'
