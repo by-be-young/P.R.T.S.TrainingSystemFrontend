@@ -1,63 +1,36 @@
 {
-    "name": "arknights-exam-frontend",
+    "name": "prts-frontend",
     "version": "2.0.0",
-    "description": "明日方舟博士考核系统前端",
+    "description": "明日方舟博士考核系统前端 - 多页面应用",
     "author": "Java大作业小组——蓬莱人形",
     "license": "MIT",
     "private": true,
     "scripts": {
-        "dev": "webpack-dev-server --config webpack.config.js --mode development",
-        "build": "webpack --config webpack.config.js --mode production",
-        "build:dev": "webpack --config webpack.config.js --mode development",
-        "serve": "http-server dist -p 8080 -c-1",
-        "lint": "eslint src/**/*.js",
-        "format": "prettier --write \"src/**/*.{js,html,css}\"",
-        "analyze": "webpack --config webpack.config.js --mode production --profile --json > stats.json && webpack-bundle-analyzer stats.json"
+        "dev": "http-server . -p 8888 -c-1 --proxy http://localhost:8889?",
+        "api": "json-server --watch db.json --port 8889",
+        "dev:full": "concurrently \"npm run api\" \"npm run dev\"",
+        "build": "echo '多页面应用，无需构建，直接部署即可'",
+        "deploy": "echo '部署到服务器'",
+        "format": "prettier --write \"**/*.{js,html,css}\" --ignore-path .prettierignore",
+        "lint": "eslint js/**/*.js --fix",
+        "clean": "rm -rf node_modules",
+        "test": "echo '无测试配置'",
+        "start": "npm run dev:full"
     },
     "dependencies": {
-        "vue": "^2.6.14",
-        "vue-router": "^3.6.5",
-        "axios": "^1.6.0",
-        "vuex": "^3.6.2",
-        "element-ui": "^2.15.14",
-        "vue-i18n": "^8.28.2",
-        "dayjs": "^1.11.9",
-        "lodash": "^4.17.21"
+        "axios": "^1.6.0"
     },
     "devDependencies": {
-        "@babel/core": "^7.23.2",
-        "@babel/preset-env": "^7.23.2",
-        "babel-loader": "^9.1.3",
-        "webpack": "^5.89.0",
-        "webpack-cli": "^5.1.4",
-        "webpack-dev-server": "^4.15.1",
-        "html-webpack-plugin": "^5.5.3",
-        "css-loader": "^6.8.1",
-        "style-loader": "^3.3.3",
-        "vue-loader": "^15.11.0",
-        "vue-template-compiler": "^2.7.14",
-        "vue-style-loader": "^4.1.3",
-        "eslint": "^8.53.0",
-        "eslint-plugin-vue": "^9.19.1",
+        "http-server": "^14.1.1",
+        "json-server": "^1.0.0-alpha.23",
+        "concurrently": "^8.2.2",
         "prettier": "^3.0.3",
-        "copy-webpack-plugin": "^11.0.0",
-        "clean-webpack-plugin": "^4.0.0",
-        "mini-css-extract-plugin": "^2.7.6",
-        "terser-webpack-plugin": "^5.3.9",
-        "compression-webpack-plugin": "^10.0.0",
-        "webpack-bundle-analyzer": "^4.9.1",
-        "cross-env": "^7.0.3",
-        "sass": "^1.69.5",
-        "sass-loader": "^13.3.2",
-        "postcss-loader": "^7.3.3",
-        "autoprefixer": "^10.4.16",
-        "file-loader": "^6.2.0",
-        "url-loader": "^4.1.1"
+        "eslint": "^8.53.0"
     },
     "browserslist": [
         "> 1%",
         "last 2 versions",
-        "not dead"
+        "not ie <= 11"
     ],
     "engines": {
         "node": ">=14.0.0",
@@ -66,9 +39,8 @@
     "keywords": [
         "arknights",
         "exam",
-        "vue",
-        "frontend",
-        "web"
+        "training-system",
+        "multi-page"
     ],
     "repository": {
         "type": "git",
