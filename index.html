@@ -34,11 +34,11 @@
     <!-- 图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Vue.js -->
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
-
     <!-- 全局API配置 -->
     <script src="js/config.js"></script>
+
+    <!-- Vue.js -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
 
     <!-- API服务层 -->
     <script src="js/api-service.js"></script>
@@ -578,9 +578,17 @@
         </div>
     </div>
 
-    <!-- 业务脚本 -->
-    <script src="js/auth-manager.js"></script>
-    <script src="js/app.js"></script>
+    <!-- 先加载基础API模块 -->
+    <script src="js/user.js"></script> <!-- 定义 userApi -->
+    <script src="js/question.js"></script> <!-- 定义 questionApi -->
+    <script src="js/answer.js"></script> <!-- 定义 answerApi -->
+    <script src="js/exam.js"></script> <!-- 定义 examApi -->
+    <script src="js/stats.js"></script> <!-- 定义 statsApi -->
+    <script src="js/trainingQuestionApi.js"></script> <!-- 如果有这个文件 -->
+
+    <!-- 再加载依赖这些API的模块 -->
+    <script src="js/auth-manager.js"></script> <!-- 使用 userApi -->
+    <script src="js/app.js"></script> <!-- 使用所有API -->
 </body>
 
 </html>
